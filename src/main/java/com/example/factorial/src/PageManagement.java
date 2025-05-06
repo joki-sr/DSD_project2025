@@ -1,5 +1,7 @@
 package com.example.factorial.src;
 
+import com.example.factorial.src.entity.User;
+
 import java.util.ArrayList;
 public class PageManagement {
     private PageManagement(){

@@ -1,4 +1,5 @@
 package com.example.factorial.src;
+import com.example.factorial.src.entity.User;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;

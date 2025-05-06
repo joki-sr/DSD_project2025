@@ -1,6 +1,6 @@
 package com.example.factorial.src.service;
 
-import com.example.factorial.src.User;
+import com.example.factorial.src.entity.User;
 import com.example.factorial.src.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

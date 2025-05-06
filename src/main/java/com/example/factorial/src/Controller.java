@@ -1,5 +1,6 @@
 package com.example.factorial.src;
 
+import com.example.factorial.src.entity.User;
 import org.springframework.stereotype.Component;
 
 @Component

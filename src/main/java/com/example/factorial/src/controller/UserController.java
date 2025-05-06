@@ -1,6 +1,6 @@
 package com.example.factorial.src.controller;
 
-import com.example.factorial.src.User;
+import com.example.factorial.src.entity.User;
 import com.example.factorial.src.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
