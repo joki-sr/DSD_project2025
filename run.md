@@ -15,6 +15,5 @@ mvn test -Dtest=DatabaseTest
 如果您想要看到更详细的测试输出，我们可以使用以下命令：
 
 ```shell
-> mvn test -Dtest=DatabaseTest -Dmaven.test.failure.ignore=true -Dorg.slf4j.simpleLogger.log.org.springframework=DEBUG
-
+mvn test -Dtest=DatabaseTest -Dmaven.test.failure.ignore=true -Dorg.slf4j.simpleLogger.log.org.springframework=DEBUG
 ```
