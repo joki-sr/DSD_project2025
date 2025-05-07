@@ -1,17 +1,19 @@
 package com.example.factorial.src;
 
 import com.example.factorial.src.repository.UserRepository;
-import com.example.factorial.src.entity.User; // 根据你的实际路径修改
+import com.example.factorial.src.entity.User; // 确保这个是你的 User 类路径
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @SpringBootTest
-public class TestUserCRUD {
+public class DatabaseTestUser {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepository userRepository; // ✅ 保证是 private 成员变量 + 注入
 
     @Test
     @Transactional
@@ -25,7 +27,12 @@ public class TestUserCRUD {
 
         // 查询用户
         User foundUser = userRepository.findByUsername("testuser");
-        System.out.println("查询到的用户: " + foundUser);
+        System.out.println("查询到的用户: " + foundUser.toString());
+        
+        // 查询所有用户
+        System.out.println("查询所有的用户: ");
+        List<User> all = userRepository.findAll();
+        all.forEach(System.out::println);
 
         // 更新密码
         foundUser.setPassword("newpassword");
