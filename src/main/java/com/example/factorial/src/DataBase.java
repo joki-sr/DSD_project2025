@@ -10,12 +10,12 @@ import java.util.List;
 @Service
 public class DataBase extends Base {
     private final UserRepository userRepository;
-    
+
     @Autowired
     public DataBase(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
-    
+
     @Override
     public int GETDATE() {
         // 计算用户数量作为示例
@@ -30,17 +30,17 @@ public class DataBase extends Base {
         }
         return 0; // 无权限
     }
-    
+
     // 获取所有用户
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
-    
+
     // 根据用户名查找用户
     public User findUserByName(String uName) {
-        return userRepository.findByuName(uName);
+        return userRepository.findByUsername(uName);
     }
-    
+
     // 保存用户
     public User saveUser(User user) {
         return userRepository.save(user);

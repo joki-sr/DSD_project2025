@@ -19,7 +19,7 @@ public class DatabaseTestUser {
     @Transactional
     public void testUserCRUD() {
         // 创建测试用户
-        User user = new User("testuser", "password123");
+        User user = new User("testuser", "password123", User.RoleType.PATIENT);
 
         // 保存用户
         User savedUser = userRepository.save(user);

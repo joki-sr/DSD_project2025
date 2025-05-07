@@ -1,0 +1,6 @@
+raw ha
+haelljlbn
+fnjkkefjkljkgf
+fvl
+生病人关系表（doctor_patient）：记录医生和病人之间的对应关系。 医生科室关系表（doctor_department）：记录医生和科室之j
+end

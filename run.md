@@ -11,7 +11,9 @@ mvn spring-boot:run
 现在所有的实体类和测试类都已经更新为匹配数据库表结构。您可以运行测试来验证数据库功能：
 
 ```shell
-mvn test -Dtest=DatabaseTestUser
+mvn test -Dtest=DatabaseTestUser #dont't user this anymore 
+mvn -Dtest=DatabaseTestUser test
+
 ```
 
 ### doctor
