@@ -4,6 +4,7 @@ import com.example.factorial.src.entity.Patient;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -19,4 +20,14 @@ public interface PatientRepository extends JpaRepository<Patient, String> {
     List<Patient> findByDoc(String doc);
 
     Patient findByUsername(String username);
+
+    Patient findByPhonenumber(String s);
+
+    List<Patient> findByIdType(Patient.IdType idType);
+
+    List<Patient> findByRealname(@Size(max = 45, message = "真实姓名长度不能超过 45 字符") String realname);
+
+    List<Patient> findByGender(Patient.Gender gender);
+
+    List<Patient> findByBirthyear(String year);
 }
