@@ -81,7 +81,7 @@ public interface UserRepository {
 
 ##### java. util. Optional<T> findById(Long id);
 
-查询根据id，若找不到则返回异常
+查询根据主键（id），若找不到则返回异常
 ```java
         // findById 异常
         Long notExistId = 999L;
@@ -121,7 +121,7 @@ public interface UserRepository {
 
 #####     void deleteById(Long id);
 
-根据Id删除用户
+根据主键（id）删除用户
 
 ##### void deleteByUsername(String username);
 
@@ -146,14 +146,17 @@ public interface UserRepository {
 
 ```java
 public interface DoctorRepository {
-    Doctor findById(String id);
-    Doctor findByUserId(Long userId);  // 根据关联的User表ID查询医生
+    Doctor findById(String id);//根据主键（username，如"DOC001")查询医生
+    **Doctor findByUserId(Long userId);  // 根据关联的User表ID查询医生
     List<Doctor> findAll();
-    Doctor findByName(String name);
+    //Doctor findByName(String name);//实现为findByDocname(),如下
+    Doctor findByDocname(String name);//根据姓名（如“张三”）查询医生
     Doctor findByPhone(String phone);
     Doctor save(Doctor doctor);
     void deleteById(String id);
-    boolean existsByNameOrPhone(String name, String phone);
+    //**boolean existsByNameOrPhone(String name, String phone);//实现为findByDocnameOrPhonenumber(),如下
+    List<Doctor> findByDocnameOrPhonenumber(@Size(max = 45, message = "医生姓名长度不能超过 45 字符") String docname, @Pattern(regexp = "^\\+?\\d{1,45}$", message = "电话号码格式不正确") String phonenumber);
+
 }
 ```
 
