@@ -48,45 +48,45 @@ public class DatabaseTestUser {
         }
         User deletedUser = userRepository.findByUsername("testuser");
         System.out.println("删除后查询结果: " + deletedUser);
-//
-//        //findById
-//        User admin = userRepository.findById(1L)
-//                .orElseThrow(() -> new RuntimeException("User with id 1 not found"));
-//        System.out.println("findById(): " + admin.toString());
-//
-//        // findById 异常
-//        Long notExistId = 999L;
-//        try {
-//            User notExistUser = userRepository.findById(notExistId)
-//                    .orElseThrow(() -> new RuntimeException("User with id "+notExistId+ "not found"));
-//            System.out.println("findById(): " + admin.toString());
-//        } catch (RuntimeException e) {
-//            System.out.println("Error: " + e.getMessage());
-//        }
-//
-//
-//        //findAll
-//        // 查询所有用户
-//        System.out.println("findByAll(): ");
-//        List<User> all = userRepository.findAll();
-//        all.forEach(System.out::println);
-//
-//        // findByUsername
-//        boolean found = false;
-//        admin = userRepository.findByUsername("admin");
-//        System.out.println("findByUsername():"+admin.toString());
-//
-//        try {
-//            User notExistUser = userRepository.findByUsername("notExistUser");
-//            System.out.println("findByUsername():" + notExistUser.toString());
-//        }catch (RuntimeException e) {
-//            System.out.println("Error: " + e.getMessage());
-//        }
-//
-//        // findByUserType
-//        System.out.println("findByRoletype(): ");
-//        List<User> patients = userRepository.findByRoletype(User.RoleType.PATIENT);
-//        patients.forEach(System.out::println);
+
+        //findById
+        User admin = userRepository.findById(1L)
+                .orElseThrow(() -> new RuntimeException("User with id 1 not found"));
+        System.out.println("findById(): " + admin.toString());
+
+        // findById 异常
+        Long notExistId = 999L;
+        try {
+            User notExistUser = userRepository.findById(notExistId)
+                    .orElseThrow(() -> new RuntimeException("User with id "+notExistId+ "not found"));
+            System.out.println("findById(): " + admin.toString());
+        } catch (RuntimeException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
+
+        //findAll
+        // 查询所有用户
+        System.out.println("findByAll(): ");
+        List<User> all = userRepository.findAll();
+        all.forEach(System.out::println);
+
+        // findByUsername
+        boolean found = false;
+        admin = userRepository.findByUsername("admin");
+        System.out.println("findByUsername():"+admin.toString());
+
+        try {
+            User notExistUser = userRepository.findByUsername("notExistUser");
+            System.out.println("findByUsername():" + notExistUser.toString());
+        }catch (RuntimeException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        // findByUserType
+        System.out.println("findByRoletype(): ");
+        List<User> patients = userRepository.findByRoletype(User.RoleType.PATIENT);
+        patients.forEach(System.out::println);
 
 
     }
