@@ -21,7 +21,7 @@ public interface PatientRepository extends JpaRepository<Patient, String> {
 
     Patient findByUsername(String username);
 
-    Patient findByPhonenumber(String s);
+    Patient findByPhonenumber(String phonenumber);
 
     List<Patient> findByIdType(Patient.IdType idType);
 

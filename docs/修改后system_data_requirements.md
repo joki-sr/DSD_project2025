@@ -166,15 +166,26 @@ public interface DoctorRepository {
 
 ```java
 public interface PatientRepository {
-    Patient findById(String id);       // ID可能是自增ID或UUID
-    Patient findByUserId(Long userId); // 根据关联的User表ID查询患者
-    Patient findByIdNumber(String idNumber); // 根据身份证号/护照号查询
+    //R
+    Patient findById(String id);       // ID是主键（username）
+    **Patient findByUserId(Long userId); // 根据关联的User表ID查询患者
+    **Patient findByIdNumber(String idNumber); // 根据身份证号/护照号查询
     List<Patient> findAll();
-    Patient findByName(String name);
-    Patient findByPhone(String phone);
+//    Patient findByName(String name);//实现为findByUsername()，如下
+//    Patient findByPhone(String phone);//实现为，如下
+    Patient findByPhonenumber(String phonenumber)
+    List<Patient> findByIdType(Patient.IdType idType);//根据护照/身份证查找
+    List<Patient> findByRealname(@Size(max = 45, message = "真实姓名长度不能超过 45 字符") String realname);//根据真实姓名（如"韩非"）查找
+    List<Patient> findByRealnameContaining(String realname);//根据真实姓名（如"三"）模糊查找
+    List<Patient> findByGender(Patient.Gender gender);//根据性别查找
+    List<Patient> findByBirthyear(String year);//根据出生年份查找，
+
+    //U
     Patient save(Patient patient);
+    
+    //D
     void deleteById(String id);
-    boolean existsByIdNumber(String idNumber);
+//    boolean existsByIdNumber(String idNumber);//不实现，使用findByIdNumber()
 }
 ```
 
