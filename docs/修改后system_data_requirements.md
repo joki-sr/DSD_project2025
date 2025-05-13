@@ -113,6 +113,10 @@ public interface UserRepository {
 
 保存user
 
+##### void setPassword/Roletype/username(String/User.RoleType/String)
+
+修改User信息（但是没有存到数据库，需要使用save() 才能存到数据库中）
+
 #### //D
 
 #####     void deleteById(Long id);
