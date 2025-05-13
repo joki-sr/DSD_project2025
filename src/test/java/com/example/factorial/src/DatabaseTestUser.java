@@ -28,20 +28,66 @@ public class DatabaseTestUser {
         // 查询用户
         User foundUser = userRepository.findByUsername("testuser");
         System.out.println("查询到的用户: " + foundUser.toString());
-        
-        // 查询所有用户
-        System.out.println("查询所有的用户: ");
-        List<User> all = userRepository.findAll();
-        all.forEach(System.out::println);
 
-        // 更新密码
+        // 更新用户
         foundUser.setPassword("newpassword");
+        foundUser.setRoletype(User.RoleType.DOCTOR);
+        foundUser.setUsername("newusername");
         User updatedUser = userRepository.save(foundUser);
-        System.out.println("更新后的密码: " + updatedUser.getPassword());
+        System.out.println("更新后的用户: " + foundUser.toString());
 
         // 删除用户
-        userRepository.delete(updatedUser);
+//        userRepository.deleteById(updatedUser.getId());
+        if (userRepository.findByUsername(updatedUser.getUsername()) != null) {
+            userRepository.deleteByUsername(updatedUser.getUsername());
+//              userRepository.deleteById(updatedUser.getId());
+
+            System.out.println("deleteByUsername: " + updatedUser.getUsername());
+        }else{
+            System.out.println(updatedUser.getUsername() + "not found");
+        }
         User deletedUser = userRepository.findByUsername("testuser");
         System.out.println("删除后查询结果: " + deletedUser);
+//
+//        //findById
+//        User admin = userRepository.findById(1L)
+//                .orElseThrow(() -> new RuntimeException("User with id 1 not found"));
+//        System.out.println("findById(): " + admin.toString());
+//
+//        // findById 异常
+//        Long notExistId = 999L;
+//        try {
+//            User notExistUser = userRepository.findById(notExistId)
+//                    .orElseThrow(() -> new RuntimeException("User with id "+notExistId+ "not found"));
+//            System.out.println("findById(): " + admin.toString());
+//        } catch (RuntimeException e) {
+//            System.out.println("Error: " + e.getMessage());
+//        }
+//
+//
+//        //findAll
+//        // 查询所有用户
+//        System.out.println("findByAll(): ");
+//        List<User> all = userRepository.findAll();
+//        all.forEach(System.out::println);
+//
+//        // findByUsername
+//        boolean found = false;
+//        admin = userRepository.findByUsername("admin");
+//        System.out.println("findByUsername():"+admin.toString());
+//
+//        try {
+//            User notExistUser = userRepository.findByUsername("notExistUser");
+//            System.out.println("findByUsername():" + notExistUser.toString());
+//        }catch (RuntimeException e) {
+//            System.out.println("Error: " + e.getMessage());
+//        }
+//
+//        // findByUserType
+//        System.out.println("findByRoletype(): ");
+//        List<User> patients = userRepository.findByRoletype(User.RoleType.PATIENT);
+//        patients.forEach(System.out::println);
+
+
     }
 }

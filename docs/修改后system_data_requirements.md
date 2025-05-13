@@ -21,18 +21,120 @@
 
 ```java
 public interface UserRepository {
+    //C
+    User(String username, String password, User.RoleType roletype)
+	//R
     User findById(Long id);
     List<User> findAll();
     User findByUsername(String username);  // 根据用户名精确查询
-    User findByPhone(String phone);        // 根据手机号精确查询
-    User findByUsernameOrPhone(String usernameOrPhone); // 同时查询用户名和手机号字段
-    User save(User user);
-    void deleteById(Long id);
-    boolean existsByUsername(String username);
-    boolean existsByPhone(String phone);
+    **User findByPhone(String phone);        // 根据手机号精确查询
+    **User findByUsernameOrPhone(String usernameOrPhone); // 同时查询用户名和手机号字段
+    //**boolean existsByUsername(String username); //不需要，使用findByUsername()替代
+    //**boolean existsByPhone(String phone);	//不需要，findByPhone()替代
     List<User> findByUserType(String userType);  // 例如：ADMIN, DOCTOR, PATIENT
+    //U
+    User save(User user);
+    //D
+    void deleteById(Long id);
+    void deleteByUsername(Long id);
 }
 ```
+
+#### //C
+
+##### User(String username, String password, User.RoleType roletype)
+
+创建新User
+
+#### //R
+
+##### User findByUsername(String username);
+
+根据用户名精确查询，若找不到则返回NULL
+
+```java
+        try {
+            User notExistUser = userRepository.findByUsername("notExistUser");
+            System.out.println("findByUsername():" + notExistUser.toString());
+        }catch (RuntimeException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+//: Cannot invoke "com.example.factorial.src.entity.User.toString()" because "notExistUser" is null
+
+```
+
+
+##### List<User> findByRole(String userType); 
+
+查找user表里的所有{Role}，例如ADMIN, DOCTOR, PATIENT
+
+##### boolean existsByUsername(String username);
+
+直接使用findByUsername()即可。
+
+##### ==​    **User findByPhone(String phone);        // 根据手机号精确查询==
+
+#####     ==**User findByUsernameOrPhone(String usernameOrPhone); // 同时查询用户名和手机号字段==
+
+##### ==**boolean existsByPhone(String phone);==
+
+
+##### java. util. Optional<T> findById(Long id);
+
+查询根据id，若找不到则返回异常
+```java
+        // findById 异常
+        Long notExistId = 999L;
+        try {
+            User notExistUser = userRepository.findById(notExistId)
+                    .orElseThrow(() -> new RuntimeException("User with id "+notExistId+ "not found"));
+            System.out.println("findById(): " + admin.toString());
+        } catch (RuntimeException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+//Error: User with id 999not found
+```
+
+##### List<User> findAll();
+
+查询所有用户，若找不到则返回NULL
+
+```java
+        //findAll
+        // 查询所有用户
+        System.out.println("findByAll(): ");
+        List<User> all = userRepository.findAll();
+        all.forEach(System.out::println);
+```
+
+#### //U
+
+#####     User save(User user);
+
+保存user
+
+#### //D
+
+#####     void deleteById(Long id);
+
+根据Id删除用户
+
+##### void deleteByUsername(String username);
+
+根据username删除用户
+
+```java
+        // 删除用户
+        if (userRepository.findByUsername(updatedUser.getUsername()) != null) {
+            userRepository.deleteByUsername(updatedUser.getUsername());//根据username删除
+//              userRepository.deleteById(updatedUser.getId()); //根据id删除
+            System.out.println("deleteByUsername: " + updatedUser.getUsername());
+        }else{
+            System.out.println(updatedUser.getUsername() + "not found");
+        }
+```
+
+
 
 ### 3.2 DoctorRepository
 
