@@ -11,12 +11,25 @@ def clean_sensor_data(csv_file, frequency=10):
 
     cleaned_data = []
 
+    # 🔁 在这里全局计算 min_time 和 max_time
+    min_time = df['时间戳'].min().floor('S')
+    max_time = df['时间戳'].max().ceil('S')  # ceil 更好，确保包含最后一条数据
+    print(f"mintime:{min_time},maxtime:{max_time}")
+
     for device_id, group in df.groupby('设备ID'):
         device_df = group.sort_values('时间戳').copy()
-        min_time = device_df['时间戳'].min()
-        max_time = device_df['时间戳'].max()
+#         min_time = device_df['时间戳'].min()
+#         max_time = device_df['时间戳'].max()
+#         min_time = device_df['时间戳'].min().floor('S')  # floor 到秒
+#         max_time = device_df['时间戳'].max().floor('S')   # ceil 到秒，确保最后一个点也被覆盖
+
         time_delta = timedelta(seconds=1 / frequency)
         target_times = pd.date_range(start=min_time, end=max_time, freq=time_delta)
+        target_times = target_times[target_times < max_time]  # 删除等于 max_time 的项
+
+
+        print("debug target_times:")
+        print(f"{target_times}")
 
         device_df.set_index('时间戳', inplace=True)
 
