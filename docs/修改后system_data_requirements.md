@@ -243,11 +243,38 @@ public interface CSVDataRepository {
 }
 ```
 
-### 3.6_ Record
+### 3.7 RecordRepository
 
 用于数据文件的保存和处理。
 
+```java
+public interface RecordRepository {
+    Record save(Record record);
+    Optional<Record> findById(Long id);//
+    List<Record> findAll();
+    void deleteById(Long id);
+    
+    // 根据用户名和精确时间查找
+	List<Record> findByUsernameAndTime(String username, Date time);
 
+// 根据用户名和日期查找
+	List<Record> findByUsernameAndDate(String username, Date date);
+
+// 查找某个用户的所有记录
+	List<Record> findByUsername(String username);
+
+// 查找某一天的所有记录
+	List<Record> findByDate(Date date);
+   
+}
+```
+
+### 3.7* ==RecordService==
+
+```java
+        List<Record> records = recordService.insertTwoCsvRecords(username, csvPath1, csvPath2);
+//根据用户名，存入新采集到的两个csv文件，并进行数据清洗（时间对齐）
+```
 
 
 
