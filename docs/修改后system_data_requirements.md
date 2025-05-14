@@ -230,7 +230,7 @@ public interface PatientReportRepository {
 }
 ```
 
-### 3.6 CSVDataRepository
+### ~~3.6 CSVDataRepository~~
 
 用于 CSV 数据文件的保存和处理。
 
@@ -242,6 +242,14 @@ public interface CSVDataRepository {
     CSVData findById(String id);
 }
 ```
+
+### 3.6_ Record
+
+用于数据文件的保存和处理。
+
+
+
+
 
 ## 4. 实体类设计建议
 

@@ -5,6 +5,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.Null;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Date;
 
 @Entity
@@ -61,6 +64,51 @@ public class Record {
     private byte[] reportFile;
 
     // Getter / Setter / 构造函数等略，可用 Lombok 简化
+
+    public Record(Date date, Date time, String username,
+                  String rawFilePath, Integer rawSizeKb, byte[] rawFile) {
+        this.date = date;
+        this.time = time;
+        this.username = username;
+        this.rawSizeKb = rawSizeKb;
+        this.rawFile = rawFile;
+        this.formatSize = 0;
+        this.formatFile = new byte[0];
+        this.reportSize = 0;
+        this.reportFile = new byte[0];
+    }
+
+    private String Null_var = "Null";
+
+    private String nullableToString(Object obj) {
+        return obj == null ? Null_var : obj.toString();
+    }
+    private String byteArrayToString(byte[] data) {
+        return data == null ? Null_var : new String(data, StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public String toString() {
+        return "Record{" +
+                "id=" + id +
+                ", date=" + nullableToString(date) +
+                ", time=" + nullableToString(time) +
+                ", username='" + nullableToString(username) + '\'' +
+
+                ", rawFilePath='" + nullableToString(rawFilePath) + '\'' +
+                ", rawSize(Kb)=" + nullableToString(rawSizeKb) +
+                ", rawFile=" + byteArrayToString(rawFile) +
+
+                ", formatFilePath='" + nullableToString(formatFilePath) + '\'' +
+                ", formatSize(Kb)=" + nullableToString(formatSize) +
+                ", formatFile=" + byteArrayToString(formatFile) +
+
+                ", reportFilePath=" + nullableToString(reportFilePath) +
+                ", reportSize(Kb)=" + nullableToString(reportSize) +
+                ", reportFile=" + byteArrayToString(reportFile) +
+                '}';
+    }
+
 
 }
 
