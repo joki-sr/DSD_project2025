@@ -288,11 +288,32 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "username", nullable = false, unique = true)
+    @Column(name = "username", nullable = true, unique = true)
     private String username;
     
     @Column(name = "password", nullable = false)
     private String password;
+
+    /** 角色类型（DOCTOR/PATIENT） */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", columnDefinition = "ENUM('DOCTOR','PATIENT','ADMIN')")
+    private User.RoleType roletype;
+    
+    /** 联系电话（允许国际区号，可根据需要调整正则） */
+    @Column(name = "phonenumber", length = 45)
+    @Pattern(regexp = "^\\+?\\d{1,45}$", message = "电话号码格式不正确")
+    private String phonenumber;
+    
+    /* ---------- 枚举 ---------- */
+    public enum RoleType {
+        @JsonProperty("DOCTOR")
+        DOCTOR,
+        @JsonProperty("PATIENT")
+        PATIENT,
+        @JsonProperty("ADMIN")
+        ADMIN,
+    }
+    
     // 构造函数、getter和setter方法
 }
 ```
@@ -301,6 +322,7 @@ public class User {
 
 ```java
 public class Doctor {
+
     /** 主键：登录用户名 */
     @Id
     @Column(name = "username", nullable = false, length = 255)
@@ -327,16 +349,16 @@ public class Doctor {
     @Column(name = "phonenumber", length = 45)
     @Pattern(regexp = "^\\+?\\d{1,45}$", message = "电话号码格式不正确")
     private String phonenumber;
-    
     // 构造函数、getter和setter方法
 
 }
 ```
-
+![](./png/db-doctor.png)
 ### 4.3 Patient
 
 ```java
 public class Patient {
+
     /** 用户名 —— 主键 */
     @Id
     @Column(name = "username", length = 255, nullable = false)
@@ -364,20 +386,38 @@ public class Patient {
     @Column(name = "gender", columnDefinition = "ENUM('male','female')")
     private Gender gender;
 
-    /** 联系电话 */
+    /** 联系电话（允许 +86-12345678901 或 11 位手机号） */
     @Column(name = "phonenumber", length = 45)
-
+//    @Pattern(
+//        regexp = "^(\\+?\\d{1,4}[- ]?)?\\d{5,20}$",
+//        message = "电话号码格式不正确"
+//    )
     private String phonenumber;
 
     /** 对应就诊医生（可为空，45 字符以内） */
     @Column(name = "doc", length = 45)
     @Size(max = 45, message = "医生字段长度不能超过 45 字符")
     private String doc;
+
+    /* ---------- 枚举 ---------- */
+
+    public enum IdType {
+        @JsonProperty("passport")
+        passport,
+        @JsonProperty("idCard")
+        idCard
+    }
+
+    public enum Gender {
+        male, female
+    }
+
     
     // 构造函数、getter和setter方法
 }
 ```
 
+![](./png/db-patient.png)
 ### ~~4.4 DoctorPatientRelation~~
 
 ```java
@@ -391,42 +431,64 @@ public class DoctorPatientRelation {
 }
 ```
 
-### 4.5 ~~PatientReport~~ Report 
+### 4.5 ~~PatientReport~~ ~~Report~~  Record
 
 ==由username可以确定是哪个patient的==
 
 ```java
-public class PatientReport {
-    /** 由 (time|username) 计算出的 SHA-256 主键，数据库侧自动生成 */
+public class Record {
+
     @Id
-    @Column(name = "hash_PK", length = 64, nullable = false,
-            insertable = false, updatable = false)
-    private String hashPK;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    /** 生成/上传时间 */
+    @Temporal(TemporalType.DATE)
+    @Column(name = "date")
+    private Date date;
+
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "time")
-    @PastOrPresent(message = "时间不能在未来")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime time;
+    private Date time;
 
-    /** 报告所属用户 */
-    @Column(name = "username", length = 255)
-    @Size(max = 255, message = "用户名长度不能超过 255 字符")
+    @Column(name = "username", length = 50, nullable = false)
     private String username;
 
-    /** 报告文件大小（字节） */
-    @Column(name = "file_size")
-    @Min(value = 0, message = "文件大小不能为负数")
-    private Integer fileSize;
+    @Column(name = "raw_file_path")
+    private String rawFilePath;
 
-    /** 报告正文内容（MEDIUMTEXT） */
+    @Column(name = "raw_size_kb")
+    private Integer rawSizeKb;
+
     @Lob
-    @Column(name = "file", columnDefinition = "MEDIUMTEXT")
-    private String file;
+    @Column(name = "raw_file", columnDefinition = "LONGBLOB")
+    private byte[] rawFile;
+
+    // 其他字段保留但可为 null，无需初始化
+    @Column(name = "format_file_path")
+    private String formatFilePath;
+
+    @Column(name = "format_size")
+    private Integer formatSize;
+
+    @Lob
+    @Column(name = "format_file", columnDefinition = "LONGBLOB")
+    private byte[] formatFile;
+
+    @Column(name = "report_file_path")
+    private String reportFilePath;
+
+    @Column(name = "report_size")
+    private Integer reportSize;
+
+    @Lob
+    @Column(name = "report_file", columnDefinition = "LONGBLOB")
+    private byte[] reportFile;
     
     // 构造函数、getter和setter方法
 }
 ```
+![](./png/db-record1.png)
+![](./png/db-record2.png)
 
 ### 4.6 ~~ReportData~~
 
@@ -440,7 +502,7 @@ public class ReportData {
 }
 ```
 
-### 4.7 ~~CSVData~~ Rawdata ==Rawdata/Format格式和Report一致==
+### 4.7 ~~CSVData~~ ~~Rawdata ==Rawdata/Format格式和Report一致==~~
 
 ```java
 public class CSVData {
@@ -455,7 +517,7 @@ public class CSVData {
 }
 ```
 
-### 4.8 用于数据传输的 DTO 对象 ==并没有设计这个==
+### ~~4.8 用于数据传输的 DTO 对象~~ 
 
 ```java
 public class DoctorPatientRelationDTO {
