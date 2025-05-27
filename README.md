@@ -32,5 +32,6 @@ mvn test -Dtest=DatabaseTestRecordService
 # 默认频率为2Hz
 python D:\development\DSD\DSD_project2025\src\main\java\com\example\factorial\src\dataProcess\clean_script.py D:\development\DSD\DSD_project2025\src\main\java\com\example\factorial\src\dataProcess\raw\2025-04-17-06-17-43.1.csv
 # 也可以手动设置频率，比如10Hz
-python D:\development\DSD\DSD_project2025\src\main\java\com\example\factorial\src\dataProcess\clean_script.py D:\development\DSD\DSD_project2025\src\main\java\com\example\factorial\src\dataProcess\raw\2025-04-17-06-17-43.1.csv 10 
+python D:\development\DSD\DSD_project2025\src\main\java\com\example\factorial\src\dataProcess\clean_script.py D:\development\DSD\DSD_project2025\src\main\java\com\example\factorial\src\dataProcess\raw\2025-04-17-06-17-43.1.csv 20 
 ```
+python D:\development\DSD\DSD_project2025\src\main\java\com\example\factorial\src\dataProcess\clean_script.py D:\development\DSD\DSD_project2025\src\main\java\com\example\factorial\src\dataProcess\raw\2025-05-27-02-44-24-1.csv 20

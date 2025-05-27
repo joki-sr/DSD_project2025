@@ -23,11 +23,11 @@ public interface PatientRepository extends JpaRepository<Patient, String> {
 
     Patient findByPhonenumber(String phonenumber);
 
-    List<Patient> findByIdType(Patient.IdType idType);
+    List<Patient> findByIdtype(Patient.IdType idtype);
 
     List<Patient> findByRealname(@Size(max = 45, message = "真实姓名长度不能超过 45 字符") String realname);
 
     List<Patient> findByGender(Patient.Gender gender);
 
-    List<Patient> findByBirthyear(String year);
+    List<Patient> findByBirthdate(String year);
 }

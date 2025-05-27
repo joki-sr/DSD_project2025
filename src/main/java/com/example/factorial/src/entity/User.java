@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "user")
@@ -20,6 +21,11 @@ public class User {
     
     @Column(name = "password", nullable = false)
     private String password;
+
+    /** 联系电话（允许国际区号，可根据需要调整正则） */
+    @Column(name = "phonenumber", length = 45)
+    @Pattern(regexp = "^\\+?\\d{1,45}$", message = "电话号码格式不正确")
+    private String phonenumber;
 
 //    @Enumerated(EnumType.STRING)
 //    private Role role;
@@ -38,10 +44,11 @@ public class User {
         ADMIN,
     }
     
-    public User(String username, String password, User.RoleType roletype) {
+    public User(String username, String password, User.RoleType roletype, String phonenumber) {
         this.username = username;
         this.password = password;
         this.roletype = roletype;
+        this.phonenumber = phonenumber;
     }
 
     @Override
@@ -51,6 +58,7 @@ public class User {
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", roletype=" + roletype + '\'' +
+                ", phonenumber='" + phonenumber + '\'' +
                 '}';
     }
 }

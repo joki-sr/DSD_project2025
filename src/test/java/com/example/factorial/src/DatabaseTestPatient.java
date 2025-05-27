@@ -26,10 +26,19 @@ public class DatabaseTestPatient {
                 "test_user_001",
                 Patient.IdType.idCard,
                 "张三",
-                "1995",
+                "1995-11-22",
                 Patient.Gender.male,
                 "+8613712345678",
                 "test_doctor"
+        );
+
+        Patient patient2 = new Patient(
+                "test_user_002",
+                Patient.IdType.idCard,
+                "李三",
+                "2000-11-22",
+                Patient.Gender.male,
+                "+8613712345678"
         );
 
         // ====== 1. 测试保存 save() ======
@@ -45,10 +54,12 @@ public class DatabaseTestPatient {
         Assertions.assertEquals("张三", foundById.getRealname());
 
         // findByIdType (passport / idCard)
-        List<Patient> patient_chinese = patientRepository.findByIdType(Patient.IdType.idCard);
+        List<Patient> patient_chinese = patientRepository.findByIdtype(Patient.IdType.idCard);
+//        Patient pt_123 = patientRepository.findById
+
         //findByRealname
         List<Patient> patient_hanfei = patientRepository.findByRealname("韩非");
-        List<Patient> patient_birthyear = patientRepository.findByBirthyear("1990");
+        List<Patient> patient_birthyear = patientRepository.findByBirthdate("1990-11-11");
         List<Patient> patient_male =  patientRepository.findByGender(Gender.male);
         Patient patient_phone = patientRepository.findByPhonenumber("13321506673");
         List<Patient> patient_by_doctor = patientRepository.findByDoc("DOC0000");

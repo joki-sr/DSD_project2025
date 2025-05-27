@@ -90,6 +90,9 @@ public class DatabaseTestDoctor {
         List<Doctor> doctor_zhangsan = doctorRepository.findByDocname("张三");
         List<Doctor> doctor_phone = doctorRepository.findByPhonenumber("13321506673");
         List<Doctor> doctor_name_or_phone = doctorRepository.findByDocnameOrPhonenumber("张三", "13321506673");
+        List<Doctor> doctor_hospital = doctorRepository.findByHospital("协和医院");
+        List<Doctor> doctor_dept = doctorRepository.findByDepartment("神经内科");
+        Doctor founddr001 = doctorRepository.findByUsername("dr001");
 
         // Step 3: 查询所有医生
         List<Doctor> allDoctors = doctorRepository.findAll();
@@ -114,10 +117,13 @@ public class DatabaseTestDoctor {
         assertEquals("+9999900000000", updated.getPhonenumber());
 
         // Step 6: 删除医生
-        doctorRepository.deleteById("dr001");
+//        doctorRepository.deleteById("dr001");
+        doctorRepository.deleteByUsername("dr001");
 
         Optional<Doctor> deleted = doctorRepository.findById("dr001");
         assertFalse(deleted.isPresent(), "医生应已被删除");
+
+
 
         // Step 0: 查询所有医生
         List<Doctor> allDoctors3 = doctorRepository.findAll();

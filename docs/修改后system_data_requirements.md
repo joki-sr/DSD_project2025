@@ -13,25 +13,103 @@
 - **Repository 层**：定义数据访问方法（System 组定义，Data 组实现）
 - **Entity 层**：具体数据库操作实现（Data 组负责）
 
-## 3. Repository 接口需求
+## 3.数据清洗
 
-### 3.1 UserRepository
+### DataManager
+
+单例懒加载的数据清洗类，调用python脚本进行时间对齐。由data team组内的RecordService调用。
+
+```java
+public class DataManager {
+    private final Integer frequency;
+    private final String pythonEdition;
+    private final String pythonFilePath;
+
+    // 私有构造函数，防止外部直接 new
+    private DataManager() {
+        // 可以在此初始化 frequency
+        frequency = 2;
+        pythonEdition = "python";
+//        pythonFilePath = "clean_script.py";
+        pythonFilePath = "D:\\development\\DSD\\DSD_project2025\\src\\main\\java\\com\\example\\factorial\\src\\dataProcess\\clean_script.py";
+    }
+
+    private static volatile DataManager instance;    // 使用 volatile 确保多线程下的可见性与禁止指令重排序
+
+    public static DataManager getInstance();
+
+    //对指定路径的csv原始数据文件清洗并存到新文件里，返回新文件路径
+    public String rawToCleaned(String  rawPath) throws IOException, InterruptedException;
+```
+
+
+
+## 4. 实体类设计建议
+
+### 4.1 User
+
+![](./png/user.png)
+
+
+
+#### User entity
+
+```java
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;
+    
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    /** 联系电话（允许国际区号，可根据需要调整正则） */
+    @Column(name = "phonenumber", length = 45)
+    @Pattern(regexp = "^\\+?\\d{1,45}$", message = "电话号码格式不正确")
+    private String phonenumber;
+
+    /** 角色类型（DOCTOR/PATIENT） */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", columnDefinition = "ENUM('DOCTOR','PATIENT','ADMIN')")
+    private User.RoleType roletype;
+    
+    /* ---------- 枚举 ---------- */
+    public enum RoleType {
+        @JsonProperty("DOCTOR")
+        DOCTOR,
+        @JsonProperty("PATIENT")
+        PATIENT,
+        @JsonProperty("ADMIN")
+        ADMIN,
+    }
+    
+    // 构造函数、getter和setter方法
+}
+```
+
+对于每个字段，都有getter和setter方法。
+
+#### UserRepository
 
 用于用户信息的增删改查和认证。
 
 ```java
 public interface UserRepository {
     //C
-    User(String username, String password, User.RoleType roletype)
+    User(String username, String password, User.RoleType roletype, String phonenumber)
 	//R
     User findById(Long id);
     List<User> findAll();
     User findByUsername(String username);  // 根据用户名精确查询
-    **User findByPhone(String phone);        // 根据手机号精确查询
-    **User findByUsernameOrPhone(String usernameOrPhone); // 同时查询用户名和手机号字段
+    User findByPhoneNumber(String phone);        // 根据手机号精确查询
+    User findByUsernameOrPhoneNumber(String usernameOrPhone); // 同时查询用户名和手机号字段
+    List<User> findByUserType(String userType);  // 例如：ADMIN, DOCTOR, PATIENT
     //**boolean existsByUsername(String username); //不需要，使用findByUsername()替代
     //**boolean existsByPhone(String phone);	//不需要，findByPhone()替代
-    List<User> findByUserType(String userType);  // 例如：ADMIN, DOCTOR, PATIENT
+
     //U
     User save(User user);
     //D
@@ -40,15 +118,17 @@ public interface UserRepository {
 }
 ```
 
-#### //C
+##### 接口用法示例
 
-##### User(String username, String password, User.RoleType roletype)
+##### //Create
+
+User(String username, String password, User.RoleType roletype)
 
 创建新User
 
-#### //R
+##### //Read
 
-##### User findByUsername(String username);
+User findByUsername(String username);
 
 根据用户名精确查询，若找不到则返回NULL
 
@@ -63,25 +143,18 @@ public interface UserRepository {
 
 ```
 
-
-##### List<User> findByRole(String userType); 
+List<User> findByRole(String userType); 
 
 查找user表里的所有{Role}，例如ADMIN, DOCTOR, PATIENT
 
-##### boolean existsByUsername(String username);
+boolean existsByUsername(String username);
 
 直接使用findByUsername()即可。
 
-##### ==​    **User findByPhone(String phone);        // 根据手机号精确查询==
-
-#####     ==**User findByUsernameOrPhone(String usernameOrPhone); // 同时查询用户名和手机号字段==
-
-##### ==**boolean existsByPhone(String phone);==
-
-
-##### java. util. Optional<T> findById(Long id);
+java. util. Optional<T> findById(Long id);
 
 查询根据主键（id），若找不到则返回异常
+
 ```java
         // findById 异常
         Long notExistId = 999L;
@@ -95,7 +168,7 @@ public interface UserRepository {
 //Error: User with id 999not found
 ```
 
-##### List<User> findAll();
+List<User> findAll();
 
 查询所有用户，若找不到则返回NULL
 
@@ -107,23 +180,23 @@ public interface UserRepository {
         all.forEach(System.out::println);
 ```
 
-#### //U
+##### //Update
 
-#####     User save(User user);
+**User save(User user);**
 
 保存user
 
-##### void setPassword/Roletype/username(String/User.RoleType/String)
+**void setPassword/Roletype/username(String/User.RoleType/String)**
 
 修改User信息（但是没有存到数据库，需要使用save() 才能存到数据库中）
 
-#### //D
+##### //Delete
 
-#####     void deleteById(Long id);
+**void deleteById(Long id);**
 
 根据主键（id）删除用户
 
-##### void deleteByUsername(String username);
+**void deleteByUsername(String username);**
 
 根据username删除用户
 
@@ -140,185 +213,13 @@ public interface UserRepository {
 
 
 
-### 3.2 DoctorRepository
 
-用于医生信息管理。
-
-```java
-public interface DoctorRepository {
-    Doctor findById(String id);//根据主键（username，如"DOC001")查询医生
-    **Doctor findByUserId(Long userId);  // 根据关联的User表ID查询医生
-    List<Doctor> findAll();
-    //Doctor findByName(String name);//实现为findByDocname(),如下
-    Doctor findByDocname(String name);//根据姓名（如“张三”）查询医生
-    Doctor findByPhone(String phone);
-    Doctor save(Doctor doctor);
-    void deleteById(String id);
-    //**boolean existsByNameOrPhone(String name, String phone);//实现为findByDocnameOrPhonenumber(),如下
-    List<Doctor> findByDocnameOrPhonenumber(@Size(max = 45, message = "医生姓名长度不能超过 45 字符") String docname, @Pattern(regexp = "^\\+?\\d{1,45}$", message = "电话号码格式不正确") String phonenumber);
-
-}
-```
-
-### 3.3 PatientRepository
-
-用于患者信息管理。
-
-```java
-public interface PatientRepository {
-    //R
-    Patient findById(String id);       // ID是主键（username）
-    **Patient findByUserId(Long userId); // 根据关联的User表ID查询患者
-    **Patient findByIdNumber(String idNumber); // 根据身份证号/护照号查询
-    List<Patient> findAll();
-//    Patient findByName(String name);//实现为findByUsername()，如下
-//    Patient findByPhone(String phone);//实现为，如下
-    Patient findByPhonenumber(String phonenumber)
-    List<Patient> findByIdType(Patient.IdType idType);//根据护照/身份证查找
-    List<Patient> findByRealname(@Size(max = 45, message = "真实姓名长度不能超过 45 字符") String realname);//根据真实姓名（如"韩非"）查找
-    List<Patient> findByRealnameContaining(String realname);//根据真实姓名（如"三"）模糊查找
-    List<Patient> findByGender(Patient.Gender gender);//根据性别查找
-    List<Patient> findByBirthyear(String year);//根据出生年份查找，
-
-    //U
-    Patient save(Patient patient);
-    
-    //D
-    void deleteById(String id);
-//    boolean existsByIdNumber(String idNumber);//不实现，使用findByIdNumber()
-}
-```
-
-### 3.4 DoctorPatientRelationRepository
-
-用于管理医生与患者关系。
-
-```java
-public interface DoctorPatientRelationRepository {
-    List<DoctorPatientRelation> findAll();
-
-    // 查询医生关联的所有患者
-    List<Patient> findPatientsByDoctorId(String doctorId);
-
-    // 获取医患关系并包含详细信息的方法（避免N+1查询）
-    List<DoctorPatientRelationDTO> findAllRelationsWithDetails();
-
-    boolean existsByDoctorIdAndPatientId(String doctorId, String patientId);
-    DoctorPatientRelation save(DoctorPatientRelation relation);
-    void deleteByDoctorIdAndPatientId(String doctorId, String patientId);
-
-    // 更新关系
-    // 实现说明：这可能需要事务支持，涉及删除旧关系和创建新关系
-    boolean updateRelation(String oldDoctorId, String oldPatientId,
-                          String newDoctorId, String newPatientId);
-}
-```
-
-### 3.5 PatientReportRepository
-
-用于患者报告管理。
-
-```java
-public interface PatientReportRepository {
-    List<PatientReport> findByPatientIdOrderByDateDesc(String patientId);
-    PatientReport findById(String reportId);
-    PatientReport save(PatientReport report);
-    void deleteById(String reportId);
-
-    // 更新报告类型和概要
-    boolean updateReportTypeAndSummary(String reportId, String type, String summary);
-}
-```
-
-### ~~3.6 CSVDataRepository~~
-
-用于 CSV 数据文件的保存和处理。
-
-```java
-public interface CSVDataRepository {
-    CSVData save(CSVData csvData);
-    CSVData findByPatientIdAndFileName(String patientId, String fileName);
-    List<CSVData> findByPatientId(String patientId);
-    CSVData findById(String id);
-}
-```
-
-### 3.7 RecordRepository
-
-用于数据文件的保存和处理。
-
-```java
-public interface RecordRepository {
-    Record save(Record record);
-    Optional<Record> findById(Long id);//
-    List<Record> findAll();
-    void deleteById(Long id);
-    
-    // 根据用户名和精确时间查找
-	List<Record> findByUsernameAndTime(String username, Date time);
-
-// 根据用户名和日期查找
-	List<Record> findByUsernameAndDate(String username, Date date);
-
-// 查找某个用户的所有记录
-	List<Record> findByUsername(String username);
-
-// 查找某一天的所有记录
-	List<Record> findByDate(Date date);
-   
-}
-```
-
-### 3.7* ==RecordService==
-
-```java
-        List<Record> records = recordService.insertTwoCsvRecords(username, csvPath1, csvPath2);
-//根据用户名，存入新采集到的两个csv文件，并进行数据清洗（时间对齐）
-```
-
-
-
-## 4. 实体类设计建议
-
-### 4.1 User
-
-```java
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "username", nullable = true, unique = true)
-    private String username;
-    
-    @Column(name = "password", nullable = false)
-    private String password;
-
-    /** 角色类型（DOCTOR/PATIENT） */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", columnDefinition = "ENUM('DOCTOR','PATIENT','ADMIN')")
-    private User.RoleType roletype;
-    
-    /** 联系电话（允许国际区号，可根据需要调整正则） */
-    @Column(name = "phonenumber", length = 45)
-    @Pattern(regexp = "^\\+?\\d{1,45}$", message = "电话号码格式不正确")
-    private String phonenumber;
-    
-    /* ---------- 枚举 ---------- */
-    public enum RoleType {
-        @JsonProperty("DOCTOR")
-        DOCTOR,
-        @JsonProperty("PATIENT")
-        PATIENT,
-        @JsonProperty("ADMIN")
-        ADMIN,
-    }
-    
-    // 构造函数、getter和setter方法
-}
-```
 
 ### 4.2 Doctor
+
+![](./png/doctor.png)
+
+#### Doctor entity
 
 ```java
 public class Doctor {
@@ -349,12 +250,64 @@ public class Doctor {
     @Column(name = "phonenumber", length = 45)
     @Pattern(regexp = "^\\+?\\d{1,45}$", message = "电话号码格式不正确")
     private String phonenumber;
-    // 构造函数、getter和setter方法
 
+    /** 业务构造器（可按需扩展） */
+    public Doctor(String username,
+                  String docname,
+                  String hospital,
+                  String department,
+                  String phonenumber) {
+        this.username   = username;
+        this.docname    = docname;
+        this.hospital   = hospital;
+        this.department = department;
+        this.phonenumber= phonenumber;
+    }
 }
 ```
-![](./png/db-doctor.png)
+构造示例：
+
+```
+Doctor doctor = new Doctor(
+        "dr001",
+        "张三",
+        "协和医院",
+        "神经内科",
+        "+8613800000000"
+);
+```
+
+#### DoctorRepository
+
+用于医生信息管理。
+
+```java
+public interface DoctorRepository {
+    Optional<T> findById(String id);//根据主键（这里的主键是username，如"DOC001")查询医生
+    Doctor findByUsername(String id);//根据username(如;"DOC001")查询医生
+    Doctor findByDocname(String name);//根据姓名（如“张三”）查询医生
+    Doctor findByPhonenumber(String phone);
+    
+    //Doctor findByName(String name);//实现为findByDocname()和findByUsername(),如上
+    List<Doctor> findAll();
+	List<Doctor> findByDocnameOrPhonenumber(@Size(max = 45, message = "医生姓名长度不能超过 45 字符") String docname, @Pattern(regexp = "^\\+?\\d{1,45}$", message = "电话号码格式不正确") String phonenumber);
+    List<Doctor> findByHospital(String hospital);
+    List<Doctor> findByDepartment(@Size(max = 45, message = "科室名称长度不能超过 45 字符") String department);
+
+    Doctor save(Doctor doctor);
+    
+    void deleteById(String id);//根据主键（username，如"DOC001")删除医生
+	void deleteByUsername(@NotBlank(message = "用户名不能为空") @Size(max = 255, message = "用户名长度不能超过 255 字符") String username);
+}
+```
+
+
+
 ### 4.3 Patient
+
+![](./png/patient.png)
+
+#### Patient entity
 
 ```java
 public class Patient {
@@ -368,18 +321,33 @@ public class Patient {
     /** 证件类型（passport / idCard） */
     @Enumerated(EnumType.STRING)
     @Column(name = "id_type", columnDefinition = "ENUM('passport','idCard')")
-    private IdType idType;
+    private IdType idtype;
+
+    /** 证件号码 */
+    @Column(name = "id_number", length = 32)
+    @Size(max = 32, message = "真实姓名长度不能超过 32 字符")
+    private String idnumber;
+
 
     /** 真实姓名 */
     @Column(name = "realname", length = 45)
     @Size(max = 45, message = "真实姓名长度不能超过 45 字符")
     private String realname;
 
-    /** 出生年份（建议 YYYY） */
-    @Column(name = "birthyear", length = 4)
-    @Pattern(regexp = "^(19|20)\\d{2}$",
-             message = "出生年份必须是 1900–2099 之间的 4 位数字")
-    private String birthyear;
+//    /** 出生年份（建议 YYYY） */
+//    @Column(name = "birthdate", length = 4)
+//    @Pattern(regexp = "^(19|20)\\d{2}$",
+//             message = "出生年份必须是 1900–2099 之间的 4 位数字")
+//    private String birthyear;
+    /** 出生日期（格式 YYYY-MM-DD） */
+    @Column(name = "birthdate")
+    @Pattern(
+            regexp = "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            message = "出生日期必须是格式为 YYYY-MM-DD 的合法日期"
+    )
+    private String birthdate;
+
+
 
     /** 性别（male / female） */
     @Enumerated(EnumType.STRING)
@@ -412,28 +380,91 @@ public class Patient {
         male, female
     }
 
+    /* ---------- 业务构造器 ---------- */
+    public Patient(String username,
+                   IdType idtype,
+                   String realname,
+                   String birthdate,
+                   Gender gender,
+                   String phonenumber,
+                   String doc) {
+        this.username    = username;
+        this.idtype      = idtype;
+        this.realname    = realname;
+        this.birthdate   = birthdate;
+        this.gender      = gender;
+        this.phonenumber = phonenumber;
+        this.doc         = doc;
+    }
+
+    public Patient(String username,
+                   IdType idtype,
+                   String realname,
+                   String birthdate,
+                   Gender gender,
+                   String phonenumber) {
+        this.username    = username;
+        this.idtype      = idtype;
+        this.realname    = realname;
+        this.birthdate   = birthdate;
+        this.gender      = gender;
+        this.phonenumber = phonenumber;
+    }
     
     // 构造函数、getter和setter方法
 }
 ```
 
-![](./png/db-patient.png)
-### ~~4.4 DoctorPatientRelation~~
+构造示例
+
+```
+Patient patient = new Patient(
+        "test_user_002",
+        Patient.IdType.idCard,
+        "李三",
+        "2000-11-22",
+        Patient.Gender.male,
+        "+8613712345678"
+);
+```
+
+#### PatientRepository
+
+用于患者信息管理。
 
 ```java
-public class DoctorPatientRelation {
-    private String id;              // 可选，若使用复合主键可不需要
-    private String doctorId;        // 医生ID，对应Doctor表的id
-    private String patientId;       // 患者ID，对应Patient表的id
-    private Date createdAt;         // 关系创建时间
+public interface PatientRepository {
+    //R
+    Patient findById(String id);//根据主键（这里的主键是username，如"pat001")查询患者
+    Patient findByUsername(String username);
+    Patient findByIdNumber(String idNumber); // 根据身份证号/护照号查询
+    Patient findByPhonenumber(String phonenumber)
+//    Patient findByName(String name);//实现为findByUsername()，如上
+//    Patient findByPhone(String phone);//实现为findByPhonenumber()，如上
+    List<Patient> findAll();
+    List<Patient> findByIdType(Patient.IdType idType);//根据护照/身份证查找
+    List<Patient> findByRealname(@Size(max = 45, message = "真实姓名长度不能超过 45 字符") String realname);//根据真实姓名（如"韩非"）查找
+    List<Patient> findByRealnameContaining(String realname);//根据真实姓名（如"三"）模糊查找
+    List<Patient> findByGender(Patient.Gender gender);//根据性别查找
+    List<Patient> findByBirthdate(String year);//根据出生年份查找
+    List<Patient> findByDoc(String doc);    /** 根据就诊医生查询患者列表 */
 
-    // 构造函数、getter和setter方法
+    //U
+    Patient save(Patient patient);
+    
+    //D
+    void deleteById(String id);
+//    boolean existsByIdNumber(String idNumber);//实现为findByIdNumber()
 }
 ```
 
-### 4.5 ~~PatientReport~~ ~~Report~~  Record
+### 4.4 Record
 
-==由username可以确定是哪个patient的==
+![](./png/db-record1.png)
+
+![](./png/db-record2.png)
+
+#### record entity
 
 ```java
 public class Record {
@@ -444,11 +475,11 @@ public class Record {
 
     @Temporal(TemporalType.DATE)
     @Column(name = "date")
-    private Date date;
+    private Date date;//YYYY-MM-DD (2025-04-17)
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "time")
-    private Date time;
+    private Date time;//YYYY-MM-DD hh:mm:ss (2025-04-16 22:17:43)
 
     @Column(name = "username", length = 50, nullable = false)
     private String username;
@@ -457,18 +488,18 @@ public class Record {
     private String rawFilePath;
 
     @Column(name = "raw_size_kb")
-    private Integer rawSizeKb;
+    private Integer rawSizeKb;//文件大小，以kb为单位
 
     @Lob
     @Column(name = "raw_file", columnDefinition = "LONGBLOB")
-    private byte[] rawFile;
+    private byte[] rawFile;//原始数据文件的内容
 
     // 其他字段保留但可为 null，无需初始化
     @Column(name = "format_file_path")
-    private String formatFilePath;
+    private String formatFilePath;//时间对齐的数据文件的内容
 
     @Column(name = "format_size")
-    private Integer formatSize;
+    private Integer formatSize;//文件大小，以kb为单位
 
     @Lob
     @Column(name = "format_file", columnDefinition = "LONGBLOB")
@@ -478,57 +509,64 @@ public class Record {
     private String reportFilePath;
 
     @Column(name = "report_size")
-    private Integer reportSize;
+    private Integer reportSize;//文件大小，以kb为单位
 
     @Lob
     @Column(name = "report_file", columnDefinition = "LONGBLOB")
-    private byte[] reportFile;
+    private byte[] reportFile;//报告文件的内容
+
+    // Getter / Setter / 构造函数等略，可用 Lombok 简化
+
+    public Record(Date date, Date time, String username,
+                  String rawFilePath, Integer rawSizeKb, byte[] rawFile) {
+        this.date = date;
+        this.time = time;
+        this.username = username;
+        this.rawSizeKb = rawSizeKb;
+        this.rawFile = rawFile;
+        this.formatSize = 0;
+        this.formatFile = new byte[0];
+        this.reportSize = 0;
+        this.reportFile = new byte[0];
+    }
+}
+```
+
+#### RecordRepository
+
+用于数据文件的保存和处理。
+
+```java
+public interface RecordRepository {
+    Record save(Record record);
+    Optional<Record> findById(Long id);//
+    List<Record> findAll();
+    void deleteById(Long id);
     
-    // 构造函数、getter和setter方法
+// 根据用户名和精确时间查找
+	List<Record> findByUsernameAndTime(String username, Date time);
+
+// 根据用户名和日期查找
+	List<Record> findByUsernameAndDate(String username, Date date);
+
+// 查找某个用户的所有记录
+	List<Record> findByUsername(String username);
+
+// 查找某一天的所有记录
+	List<Record> findByDate(Date date);
+   
 }
 ```
-![](./png/db-record1.png)
-![](./png/db-record2.png)
 
-### 4.6 ~~ReportData~~
+#### RecordService
 
 ```java
-public class ReportData {
-    private List<Double> standardRange;  // 标准幅度，12项指标
-    private List<Double> motionRange;    // 运动幅度，12项指标
-    private List<Double> difference;     // 差值，12项指标
+        List<Record> records = recordService.insertTwoCsvRecords(String username, String csvPath1, String csvPath2);//根据用户名，存入新采集到的两个csv文件，并进行数据清洗（时间对齐）
+        List<Record> records = recordService.insertFourCsvRecords(String username, String csvPath1, String csvPath2, String csvPath3, String csvPath4);//根据用户名，存入新采集到的4个csv文件，并进行数据清洗（时间对齐）
 
-    // 构造函数、getter和setter方法
-}
 ```
 
-### 4.7 ~~CSVData~~ ~~Rawdata ==Rawdata/Format格式和Report一致==~~
 
-```java
-public class CSVData {
-    private String id;              // 系统生成的唯一标识，如UUID
-    private String patientId;       // 关联的患者ID
-    private String fileName;        // 上传的文件名
-    private Date uploadTime;        // 上传时间
-    private String fileContent;     // CSV文件内容或存储路径
-    private long fileSize;          // 文件大小（字节）
-
-    // 构造函数、getter和setter方法
-}
-```
-
-### ~~4.8 用于数据传输的 DTO 对象~~ 
-
-```java
-public class DoctorPatientRelationDTO {
-    private String doctorId;
-    private String doctorName;
-    private String patientId;
-    private String patientName;
-
-    // 构造函数、getter和setter方法
-}
-```
 
 ## 5. 用户与医生/患者关联机制
 

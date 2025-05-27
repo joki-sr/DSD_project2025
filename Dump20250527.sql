@@ -1,11 +1,11 @@
 -- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
--- Host: localhost    Database: dsd_test250507
+-- Host: localhost    Database: dsd_test250526
 -- ------------------------------------------------------
 -- Server version	8.0.34
 
-create schema dsd_test250526;
-use dsd_test250526;
+create schema dsd_test250527;
+use dsd_test250527;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -41,7 +41,7 @@ CREATE TABLE `doctor` (
 
 LOCK TABLES `doctor` WRITE;
 /*!40000 ALTER TABLE `doctor` DISABLE KEYS */;
-INSERT INTO `doctor` VALUES ('DOC0000','王二','九江第一人民医院','外科','13344445555'),('DOC0001', '张三', '协和医院', '骨科', '13355556666');
+INSERT INTO `doctor` VALUES ('DOC0000','王二','九江第一人民医院','外科','13344445555'),('DOC0001','张三','协和医院','骨科','13355556666');
 /*!40000 ALTER TABLE `doctor` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -81,8 +81,9 @@ DROP TABLE IF EXISTS `patient`;
 CREATE TABLE `patient` (
   `username` varchar(255) NOT NULL,
   `id_type` enum('passport','idCard') DEFAULT NULL,
+  `id_number` varchar(32) DEFAULT NULL,
   `realname` varchar(45) DEFAULT NULL,
-  `birthyear` varchar(45) DEFAULT NULL,
+  `birthdate` date DEFAULT NULL,
   `gender` enum('male','female') DEFAULT NULL,
   `phonenumber` varchar(45) DEFAULT NULL,
   `doc` varchar(45) DEFAULT NULL,
@@ -96,7 +97,7 @@ CREATE TABLE `patient` (
 
 LOCK TABLES `patient` WRITE;
 /*!40000 ALTER TABLE `patient` DISABLE KEYS */;
-INSERT INTO `patient` VALUES ('220221xxxxxxxxxxxx','idCard','韩非','1998','male','13321506673','DOC0000');
+INSERT INTO `patient` VALUES ('220221xxxxxxxxxxxx','idCard','12345619941111983x','韩非','1998-11-11','male','13321506673','DOC0000');
 /*!40000 ALTER TABLE `patient` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -201,8 +202,10 @@ CREATE TABLE `user` (
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('DOCTOR','PATIENT','ADMIN') NOT NULL,
+  `phonenumber` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `username` (`username`)
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `phonenumber` (`phonenumber`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -212,7 +215,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'220221xxxxxxxxxxxx','123456','PATIENT'),(2,'Admin','nimdA','ADMIN'),(3,'DOC0000','DOC0000','DOCTOR');
+INSERT INTO `user` VALUES (1,'220221xxxxxxxxxxxx','123456','PATIENT','13321506673'),(2,'Admin','nimdA','ADMIN','13490909092'),(3,'DOC0000','DOC0000','DOCTOR','13344445555'),(4,'DOC0001','DOC0001','DOCTOR','13355556666');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -225,4 +228,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-14 17:30:30
+-- Dump completed on 2025-05-27 19:23:41
